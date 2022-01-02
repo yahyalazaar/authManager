@@ -20,7 +20,7 @@ defmodule AuthManager.MixProject do
   def application do
     [
       mod: {AuthManager.Application, []},
-      extra_applications: [:logger, :runtime_tools],
+      extra_applications: [:logger, :runtime_tools, :eventstore],
       application: [:guardian]
     ]
   end
@@ -48,7 +48,13 @@ defmodule AuthManager.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:comeonin, "~> 4.0"},
       {:bcrypt_elixir, "~> 1.0"},
-      {:guardian, "~> 2.2"}
+      {:guardian, "~> 2.2"},
+      {:eventstore, "~> 1.3"},
+      {:elixir_uuid, "~> 1.2"},
+      {:commanded, "~> 1.3"},
+      {:commanded_eventstore_adapter, "~> 1.2"},
+      {:commanded_ecto_projections, "~> 1.2"},
+      {:exconstructor, "~> 1.2"}
     ]
   end
 
@@ -60,6 +66,7 @@ defmodule AuthManager.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
+      "event_store.init": ["event_store.drop", "event_store.create", "event_store.init"],
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],

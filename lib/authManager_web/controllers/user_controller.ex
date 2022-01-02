@@ -2,14 +2,14 @@ defmodule AuthManagerWeb.UserController do
   use AuthManagerWeb, :controller
 
   alias AuthManager.Accounts
-  alias AuthManager.Accounts.User
+  alias AuthManager.Accounts.Projections.User
   alias AuthManager.Guardian
 
   action_fallback(AuthManagerWeb.FallbackController)
 
   def index(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    profile = Accounts.get_profile_by_user(user.id)
+    profile = Accounts.get_profile_by_user(user.uuid)
 
     case profile.is_admin do
       true ->
@@ -22,18 +22,19 @@ defmodule AuthManagerWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
+    # user_params = Map.put(user_params, "uuid", UUID.uuid4())
     with {:ok, %User{} = user} <- Accounts.create_user(user_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user, token_type: :access) do
       conn
       |> put_status(:ok)
-      |> render("jwt.json", %{jwt: token, email: user.email})
+      |> render("jwt.json", user: user, jwt: token)
     end
   end
 
   def sign_in(conn, %{"email" => email, "password" => password}) do
     case Accounts.token_sign_in(email, password) do
-      {:ok, token, _claims} ->
-        conn |> render("jwt.json", %{jwt: token, email: email})
+      {:ok, {token, user}, _claims} ->
+        conn |> render("jwt.json", user: user, jwt: token)
 
       _ ->
         {:error, :unauthorized}
@@ -47,27 +48,27 @@ defmodule AuthManagerWeb.UserController do
     |> render("signout.json", %{})
   end
 
-  def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def show(conn, %{"uuid" => uuid}) do
+    user = Accounts.get_user!(uuid)
     render(conn, "show.json", user: user)
   end
 
   def my_user(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    profile = Accounts.get_profile_by_user(user.id)
+    profile = Accounts.get_profile_by_user(user.uuid)
     conn |> render("user_details.json", user: user, profile: profile)
   end
 
-  def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
+  def update(conn, %{"uuid" => uuid, "user" => user_params}) do
+    user = Accounts.get_user!(uuid)
 
     with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def delete(conn, %{"uuid" => uuid}) do
+    user = Accounts.get_user!(uuid)
 
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")

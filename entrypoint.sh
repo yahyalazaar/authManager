@@ -14,6 +14,13 @@ done
 
 # Create the database if it doesn't exist.
 # -z flag returns true if string is null.
+if [[ -z `psql -Atqc "\\list $DATABASE_EVENTSTORE_NAME"` ]]; then
+  echo "Database $DATABASE_EVENTSTORE_NAME does not exist. Creating..."
+  # mix event_store.create
+  mix event_store.init
+  echo "Database $DATABASE_EVENTSTORE_NAME created."
+fi
+
 if [[ -z `psql -Atqc "\\list $DATABASE_NAME"` ]]; then
   echo "Database $DATABASE_NAME does not exist. Creating..."
   mix ecto.create
