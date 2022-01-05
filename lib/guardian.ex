@@ -2,7 +2,7 @@ defmodule AuthManager.Guardian do
   use Guardian, otp_app: :authManager
 
   def subject_for_token(user, _claims) do
-    sub = to_string(user.id)
+    sub = to_string(user.uuid)
     {:ok, sub}
   end
 

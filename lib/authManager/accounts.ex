@@ -5,15 +5,19 @@ defmodule AuthManager.Accounts do
 
   import Ecto.Query, warn: false
   alias AuthManager.Repo
+  alias AuthManager.App
 
-  alias AuthManager.Accounts.User
+  alias AuthManager.Accounts.Projections.{User, Profile}
+  alias AuthManager.Accounts.Commands.{CreateUser, UpdateUser, CreateProfile, UpdateProfile}
+  alias AuthManager.Accounts.Queries.UserByEmail
   alias AuthManager.Guardian
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
 
   def token_sign_in(email, password) do
     case email_password_auth(email, password) do
       {:ok, user} ->
-        Guardian.encode_and_sign(user, token_type: :access)
+        {Guardian.encode_and_sign(user, token_type: :access), user}
+
       _ ->
         {:error, :unauthorized}
     end
@@ -24,8 +28,14 @@ defmodule AuthManager.Accounts do
          do: verify_password(password, user)
   end
 
-  defp get_by_email(email) when is_binary(email) do
-    case Repo.get_by(User, email: email) do
+  def get_by_email(email) when is_binary(email) do
+    get_by_email =
+      email
+      |> String.downcase()
+      |> UserByEmail.new()
+      |> Repo.one()
+
+    case get_by_email do
       nil ->
         dummy_checkpw()
         {:error, "Login error."}
@@ -33,6 +43,16 @@ defmodule AuthManager.Accounts do
       user ->
         {:ok, user}
     end
+  end
+
+  @doc """
+  Get an existing user by their email address, or return `nil` if not registered
+  """
+  def user_by_email(email) when is_binary(email) do
+    email
+    |> String.downcase()
+    |> UserByEmail.new()
+    |> Repo.one()
   end
 
   defp verify_password(password, %User{} = user) when is_binary(password) do
@@ -70,7 +90,7 @@ defmodule AuthManager.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(uuid), do: Repo.get!(User, uuid)
 
   @doc """
   Creates a user.
@@ -85,9 +105,18 @@ defmodule AuthManager.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.changeset(attrs)
-    |> Repo.insert()
+    uuid = UUID.uuid4()
+
+    create_user =
+      attrs
+      |> CreateUser.new()
+      |> CreateUser.assign_uuid(uuid)
+      |> CreateUser.downcase_email()
+      |> CreateUser.put_password_hash()
+
+    with :ok <- App.dispatch(create_user, consistency: :strong) do
+      get(User, uuid)
+    end
   end
 
   @doc """
@@ -102,10 +131,23 @@ defmodule AuthManager.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user(%User{} = user, attrs) do
-    user
-    |> User.changeset(attrs)
-    |> Repo.update()
+  def update_user(%User{uuid: uuid} = user, attrs) do
+    update_user =
+      attrs
+      |> UpdateUser.new()
+      |> UpdateUser.assign_user(user)
+      |> UpdateUser.downcase_email()
+
+    with :ok <- App.dispatch(update_user, consistency: :strong) do
+      get(User, uuid)
+    end
+  end
+
+  defp get(schema, uuid) do
+    case Repo.get!(schema, uuid) do
+      nil -> {:error, :not_found}
+      projection -> {:ok, projection}
+    end
   end
 
   @doc """
@@ -133,11 +175,12 @@ defmodule AuthManager.Accounts do
       %Ecto.Changeset{data: %User{}}
 
   """
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
-  end
 
-  alias AuthManager.Accounts.Profile
+  # def change_user(%User{} = user, attrs \\ %{}) do
+  #   User.changeset(user, attrs)
+  # end
+
+  alias AuthManager.Accounts.Projections.Profile
 
   @doc """
   Returns the list of profiles.
@@ -166,10 +209,10 @@ defmodule AuthManager.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_profile!(id), do: Repo.get!(Profile, id)
+  def get_profile!(uuid), do: Repo.get!(Profile, uuid)
 
-  def get_profile_by_user(user_id) do
-    Repo.get_by(Profile, user_id: user_id)
+  def get_profile_by_user(user_uuid) do
+    Repo.get_by(Profile, user_uuid: user_uuid)
   end
 
   @doc """
@@ -184,10 +227,18 @@ defmodule AuthManager.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_profile(attrs \\ %{}) do
-    %Profile{}
-    |> Profile.changeset(attrs)
-    |> Repo.insert()
+  def create_profile(%User{} = user, attrs \\ %{}) do
+    uuid = UUID.uuid4()
+
+    create_profile =
+      attrs
+      |> CreateProfile.new()
+      |> CreateProfile.assign_uuid(uuid)
+      |> CreateProfile.assign_user(user)
+
+    with :ok <- App.dispatch(create_profile, consistency: :strong) do
+      get(Profile, uuid)
+    end
   end
 
   @doc """
@@ -202,10 +253,17 @@ defmodule AuthManager.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_profile(%Profile{} = profile, attrs) do
-    profile
-    |> Profile.changeset(attrs)
-    |> Repo.update()
+  def update_profile(%Profile{uuid: uuid} = profile, attrs) do
+    update_profile =
+      attrs
+      |> UpdateProfile.new()
+      |> UpdateProfile.assign_profile(profile)
+
+    # |> UpdateProfile.validate_input(attrs)
+
+    with :ok <- App.dispatch(update_profile, consistency: :strong) do
+      get(Profile, uuid)
+    end
   end
 
   @doc """
@@ -233,7 +291,7 @@ defmodule AuthManager.Accounts do
       %Ecto.Changeset{data: %Profile{}}
 
   """
-  def change_profile(%Profile{} = profile, attrs \\ %{}) do
-    Profile.changeset(profile, attrs)
-  end
+  # def change_profile(%Profile{} = profile, attrs \\ %{}) do
+  #   Profile.changeset(profile, attrs)
+  # end
 end

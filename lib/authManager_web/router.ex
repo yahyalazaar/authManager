@@ -7,28 +7,33 @@ defmodule AuthManagerWeb.Router do
 
   pipeline :jwt_authenticated do
     plug(AuthManager.Guardian.AuthPipeline)
-    plug :fetch_session
-    plug :fetch_flash
+    plug(:fetch_session)
+    plug(:fetch_flash)
   end
 
   scope "/api/v1", AuthManagerWeb do
     pipe_through(:api)
-
+    #Create account & session
     post("/signup", UserController, :create)
     post("/signin", UserController, :sign_in)
-
   end
 
   scope "/api/v1", AuthManagerWeb do
     pipe_through([:api, :jwt_authenticated])
 
+    #User route
     get("/users", UserController, :index)
     get("/me", UserController, :my_user)
-    get("/users/:id", UserController, :show)
-    patch("/users/:id", UserController, :update)
-    put("/users/:id", UserController, :update)
+    get("/users/:uuid", UserController, :show)
+    patch("/users/:uuid", UserController, :update)
+    put("/users/:uuid", UserController, :update)
+    #Close session
     post("/signout", UserController, :sign_out)
-    resources("/profiles", ProfileController, except: [:new, :edit])
+    #Profile route
+    get("/profiles", ProfileController, :index)
+    get("/profiles/:uuid", ProfileController, :show)
+    patch("/profiles/:uuid", ProfileController, :update)
+    put("/profiles/:uuid", ProfileController, :update)
   end
 
   # Enables LiveDashboard only for development

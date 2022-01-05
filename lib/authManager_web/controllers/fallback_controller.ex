@@ -45,4 +45,11 @@ defmodule AuthManagerWeb.FallbackController do
     |> put_status(:unauthorized)
     |> json(%{error: "Sorry! you don't have the permission to execute this request!"})
   end
+
+  def call(conn, {:error, :validation_failure, errors}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(AuthManagerWeb.ValidationView)
+    |> render("error.json", errors: errors)
+  end
 end

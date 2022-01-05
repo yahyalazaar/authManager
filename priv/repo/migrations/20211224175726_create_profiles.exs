@@ -3,6 +3,7 @@ defmodule AuthManager.Repo.Migrations.CreateProfiles do
 
   def change do
     create table(:profiles) do
+      add :uuid, :uuid, primary_key: true
       add :name, :string
       add :phone, :string
       add :role, :string
@@ -11,11 +12,11 @@ defmodule AuthManager.Repo.Migrations.CreateProfiles do
       add :zip, :string
       add :city, :string
       add :country, :string
-      add :user_id, references(:users, on_delete: :nothing), null: false
+      add :user_uuid, references(:users, column: :uuid, type: :uuid, on_delete: :nothing), null: false
 
       timestamps()
     end
 
-    create index(:profiles, [:user_id])
+    create index(:profiles, [:user_uuid])
   end
 end

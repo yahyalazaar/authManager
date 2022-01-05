@@ -8,6 +8,7 @@ defmodule AuthManager.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      AuthManager.App,
       # Start the Ecto repository
       AuthManager.Repo,
       # Start the Telemetry supervisor
@@ -15,9 +16,12 @@ defmodule AuthManager.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: AuthManager.PubSub},
       # Start the Endpoint (http/https)
-      AuthManagerWeb.Endpoint
+      AuthManagerWeb.Endpoint,
       # Start a worker by calling: AuthManager.Worker.start_link(arg)
       # {AuthManager.Worker, arg}
+
+      AuthManager.Accounts.Supervisor,
+      AuthManager.Support.Unique
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

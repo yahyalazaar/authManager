@@ -8,7 +8,8 @@
 import Config
 
 config :authManager,
-  ecto_repos: [AuthManager.Repo]
+  ecto_repos: [AuthManager.Repo],
+  event_stores: [AuthManager.EventStore]
 
 # Configures the endpoint
 config :authManager, AuthManagerWeb.Endpoint,
@@ -33,7 +34,20 @@ config :authManager, AuthManager.Guardian,
   # allowed_algos: ["Ed25519"],
   # secret_fetcher: AuthManager.Guardian.KeyServer
   # "Secret key. Use `mix guardian.gen.secret` to generate one"
+config :commanded,
+  event_store_adapter: Commanded.EventStore.Adapters.EventStore
 
+config :commanded_ecto_projections,
+  repo: AuthManager.Repo
+
+
+config :authManager, AuthManager.App,
+  event_store: [
+    adapter: Commanded.EventStore.Adapters.EventStore,
+    event_store: AuthManager.EventStore
+  ],
+  pub_sub: :local,
+  registry: :local
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
@@ -42,7 +56,12 @@ config :authManager, AuthManager.Guardian,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :authManager, AuthManager.Mailer, adapter: Swoosh.Adapters.Local
-
+config :vex,
+  sources: [
+    AuthManager.Accounts.Validators,
+    AuthManager.Support.Validators,
+    Vex.Validators
+  ]
 # Swoosh API client is needed for adapters other than SMTP.
 config :swoosh, :api_client, false
 

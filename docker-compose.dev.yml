@@ -5,10 +5,10 @@ version: "3.7"
 #     driver: overlay
 #     attachable: true # Needed in order to run custom commands in the container
 services:
-  pgadmin:
+  pgadmin_dev:
     image: dpage/pgadmin4
     depends_on:
-      - db
+      - db_dev
     ports:
       - "5555:80"
     environment:
@@ -16,8 +16,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     restart: unless-stopped
     volumes:
-      - pgadmin:/var/lib/pgadmin
-  db:
+      - pgadminDev:/var/lib/pgadmin
+  db_dev:
     image: postgres:14
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
@@ -31,11 +31,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdataDev:/var/lib/postgresql/data
     # networks:
     #   - webnet 
   api_dev:
-    image: authmanager:0.0.1-dev
+    image: authmanager:0.1.0-dev
     build:
       context: .
       args:
@@ -46,16 +46,18 @@ services:
     env_file:
       - config/docker.env
     environment:
+      - DATABASE_HOST=db_dev
       - DATABASE_NAME=authManager_dev
-      - DATABASE_URL=ecto://postgres:postgres@host.docker.internal/authManager_dev
+      - DATABASE_EVENTSTORE_NAME=authManager_eventstore_dev
+      # - DATABASE_URL=ecto://postgres:postgres@host.docker.internal/authManager_dev
       - PORT=4000
     depends_on:
-      - db
+      - db_dev
     # networks:
     #   - webnet
     restart: on-failure
 
 
 volumes:
-  pgdata:
-  pgadmin:
+  pgdataDev:
+  pgadminDev:

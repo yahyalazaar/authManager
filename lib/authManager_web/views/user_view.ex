@@ -12,19 +12,19 @@ defmodule AuthManagerWeb.UserView do
 
   def render("user.json", %{user: user}) do
     %{
-      id: user.id,
-      email: user.email,
+      uuid: user.uuid,
+      email: user.email
       # password_hash: user.password_hash
     }
   end
 
   def render("user_details.json", %{user: user, profile: profile}) do
     %{
-      id: user.id,
+      uuid: user.uuid,
       email: user.email,
       # password_hash: user.password_hash,
       profile: %{
-        id: profile.id,
+        uuid: profile.uuid,
         name: profile.name,
         phone: profile.phone,
         role: profile.role,
@@ -37,8 +37,8 @@ defmodule AuthManagerWeb.UserView do
     }
   end
 
-  def render("jwt.json", %{jwt: jwt, email: email}) do
-    %{jwt: jwt, email: email}
+  def render("jwt.json", %{user: user, jwt: jwt}) do
+    %{user: user |> render_one(UserView, "user.json") |> Map.merge(%{token: jwt})}
   end
 
   def render("signout.json", %{}) do

@@ -7,9 +7,16 @@ config :authManager, AuthManager.Repo,
   database: System.get_env("DATABASE_NAME"),
   hostname: System.get_env("DATABASE_HOST"),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  show_sensitive_data_on_connection_error: true
+  # pool_size: 10
 
+config :authManager, AuthManager.EventStore,
+  serializer: Commanded.Serialization.JsonSerializer,
+  username: System.get_env("DATABASE_USER"),
+  password: System.get_env("DATABASE_PASS"),
+  database: System.get_env("DATABASE_EVENTSTORE_NAME"),
+  hostname: System.get_env("DATABASE_HOST"),
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -22,7 +29,7 @@ config :authManager, AuthManagerWeb.Endpoint,
   http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT")],
   check_origin: false,
   code_reloader: true,
-  debug_errors: false,
+  debug_errors: true,
   secret_key_base: "3oMEOh5fLmNeOgBbtB/35NMk89E4K7j49dACnlEVQ/m8JE/DrfICxlT3ikeeyRMq",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)

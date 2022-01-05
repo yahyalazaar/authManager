@@ -12,8 +12,8 @@ defmodule AuthManagerWeb.ProfileView do
 
   def render("profile.json", %{profile: profile}) do
     %{
-      id: profile.id,
-      user_id: profile.user_id,
+      uuid: profile.uuid,
+      user_uuid: profile.user_uuid,
       name: profile.name,
       phone: profile.phone,
       role: profile.role,
