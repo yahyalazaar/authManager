@@ -8,8 +8,8 @@ defmodule AuthManager.Accounts.Projections.User do
     field(:email, :string)
     field(:password_hash, :string)
     # Virtual fields:
-    field(:password, :string, virtual: true)
-    field(:password_confirmation, :string, virtual: true)
+    # field(:password, :string, virtual: true)
+    # field(:password_confirmation, :string, virtual: true)
     timestamps()
   end
 end

@@ -54,7 +54,8 @@ defmodule AuthManager.MixProject do
       {:commanded, "~> 1.3"},
       {:commanded_eventstore_adapter, "~> 1.2"},
       {:commanded_ecto_projections, "~> 1.2"},
-      {:exconstructor, "~> 1.2"}
+      {:exconstructor, "~> 1.2"},
+      {:vex, "~> 0.9.0"}
     ]
   end
 

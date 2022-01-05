@@ -3,6 +3,7 @@ defmodule AuthManager.Accounts.Projections.Profile do
 
   @primary_key {:uuid, Ecto.UUID, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
+  @derive {Phoenix.Param, key: :uuid}
   schema "profiles" do
     # field(:uuid, Ecto.UUID)
     field(:address, :string)

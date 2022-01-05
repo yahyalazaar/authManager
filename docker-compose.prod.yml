@@ -5,19 +5,19 @@ version: "3.7"
 #     driver: overlay
 #     attachable: true # Needed in order to run custom commands in the container
 services:
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "5555:80"
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@admin.fr
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   restart: unless-stopped
-  #   volumes:
-  #     - pgadmin:/var/lib/pgadmin
-  db:
+  pgadmin_prod:
+    image: dpage/pgadmin4
+    depends_on:
+      - db_prod
+    ports:
+      - "5555:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    restart: unless-stopped
+    volumes:
+      - pgadminProd:/var/lib/pgadmin
+  db_prod:
     image: postgres:14
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
@@ -31,11 +31,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdataProd:/var/lib/postgresql/data
     # networks:
     #   - webnet 
   api_prod:
-    image: authmanager:0.0.1
+    image: authmanager:0.1.0
     build:
       context: .
       args:
@@ -46,16 +46,17 @@ services:
     env_file:
       - config/docker.env
     environment:
+      - DATABASE_HOST=db_prod
       - DATABASE_NAME=authManager_prod
       - DATABASE_URL=ecto://postgres:postgres@host.docker.internal/authManager_prod
       - PORT=4000
     depends_on:
-      - db
+      - db_prod
     # networks:
     #   - webnet
     restart: on-failure
 
 
 volumes:
-  pgdata:
-  pgadmin:
+  pgdataProd:
+  pgadminProd:

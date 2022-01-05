@@ -6,33 +6,42 @@ defmodule AuthManager.Accounts.Commands.UpdateUser do
             password_hash: ""
 
   use ExConstructor
-  import Ecto.Changeset
+  use Vex.Struct
   alias AuthManager.Accounts.Commands.UpdateUser
   alias AuthManager.Accounts.Projections.User
+  alias AuthManager.Accounts.Validators.UniqueEmail
 
-  @doc false
-  def validate_input(%UpdateUser{} = user, attrs) do
-      user
-      # Remove hash, add pw + pw confirmation
-      |> cast(attrs, [:uuid, :email, :password, :password_confirmation])
-      # Remove hash, add pw + pw confirmation
-      |> validate_required([:uuid, :email, :password, :password_confirmation])
-      # Check that email is valid
-      |> validate_format(:email, ~r/@/)
-      # Check that password length is >= 8
-      |> validate_length(:password, min: 8)
-      # Check that password === password_confirmation
-      |> validate_confirmation(:password)
-      |> unique_constraint(:email)
-      |> put_password_hash
-    end
+  validates(:uuid, uuid: true)
 
-    @doc """
-    Hash the password, clear the original password
-    """
-    def put_password_hash(%UpdateUser{password: password, password_confirmation: password_confirmation} = update_user) do
-      %UpdateUser{update_user | password: nil, password_confirmation: nil, password_hash: Comeonin.Bcrypt.hashpwsalt(password)}
-    end
+  validates(:email,
+    presence: [message: "Email can't be empty"],
+    format: [with: ~r/\S+@\S+\.\S+/, allow_nil: true, allow_blank: true, message: "is invalid"],
+    string: true,
+    by: &UniqueEmail.validate/2
+  )
+
+  validates(:password,
+    presence: [message: "Password can't be empty"],
+    length: [min: 8],
+    confirmation: true
+  )
+
+  validates(:password_hash, presence: [message: "can't be empty"], string: true)
+
+  @doc """
+  Hash the password, clear the original password
+  """
+  def put_password_hash(
+        %UpdateUser{password: password, password_confirmation: password_confirmation} =
+          update_user
+      ) do
+    %UpdateUser{
+      update_user
+      | password: nil,
+        password_confirmation: nil,
+        password_hash: Comeonin.Bcrypt.hashpwsalt(password)
+    }
+  end
 
   @doc """
   Assign the user identity

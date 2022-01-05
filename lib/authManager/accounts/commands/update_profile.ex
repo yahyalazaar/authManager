@@ -11,39 +11,21 @@ defmodule AuthManager.Accounts.Commands.UpdateProfile do
             country: ""
 
   use ExConstructor
-  import Ecto.Changeset
+  use Vex.Struct
   alias AuthManager.Accounts.Commands.UpdateProfile
   alias AuthManager.Accounts.Projections.{User, Profile}
-  @doc false
-  def validate_input(%UpdateProfile{} = profile, attrs) do
-  # def changeset(profile, attrs) do
-    profile
-    |> cast(attrs, [
-      :uuid,
-      :name,
-      :phone,
-      :role,
-      :is_admin,
-      :address,
-      :zip,
-      :country,
-      :city,
-      :user_uuid
-    ])
-    |> validate_required([
-      :uuid,
-      :name,
-      :phone,
-      :role,
-      :is_admin,
-      :address,
-      :zip,
-      :country,
-      :city,
-      :user_uuid
-    ])
-  end
 
+  validates(:uuid, uuid: true)
+
+  validates(:name,
+    presence: [message: "Name can't be empty"],
+    string: true
+  )
+
+  validates(:phone,
+    presence: [message: "Phone can't be empty"],
+    string: true
+  )
   @doc """
   Assign a user to profile
   """

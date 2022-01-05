@@ -3,7 +3,11 @@ defmodule AuthManager.Router do
 
   alias AuthManager.Accounts.Aggregates.{User, Profile}
   alias AuthManager.Accounts.Commands.{CreateUser, UpdateUser, CreateProfile, UpdateProfile}
+  alias AuthManager.Support.Middleware.{Uniqueness, Validate}
 
+  middleware(Validate)
+  middleware(Uniqueness)
+  
   identify(User, by: :uuid, prefix: "user-")
   identify(Profile, by: :uuid, prefix: "profile-")
   dispatch(

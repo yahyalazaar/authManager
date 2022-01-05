@@ -33,7 +33,7 @@ defmodule AuthManager.Accounts do
       email
       |> String.downcase()
       |> UserByEmail.new()
-      |> Repo.one!()
+      |> Repo.one()
 
     case get_by_email do
       nil ->
@@ -43,6 +43,16 @@ defmodule AuthManager.Accounts do
       user ->
         {:ok, user}
     end
+  end
+
+  @doc """
+  Get an existing user by their email address, or return `nil` if not registered
+  """
+  def user_by_email(email) when is_binary(email) do
+    email
+    |> String.downcase()
+    |> UserByEmail.new()
+    |> Repo.one()
   end
 
   defp verify_password(password, %User{} = user) when is_binary(password) do
@@ -95,9 +105,6 @@ defmodule AuthManager.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
-    # %User{}
-    # |> User.changeset(attrs)
-    # |> Repo.insert()
     uuid = UUID.uuid4()
 
     create_user =
@@ -106,8 +113,6 @@ defmodule AuthManager.Accounts do
       |> CreateUser.assign_uuid(uuid)
       |> CreateUser.downcase_email()
       |> CreateUser.put_password_hash()
-
-    # |> CreateUser.validate_input(attrs)
 
     with :ok <- App.dispatch(create_user, consistency: :strong) do
       get(User, uuid)
@@ -127,16 +132,11 @@ defmodule AuthManager.Accounts do
 
   """
   def update_user(%User{uuid: uuid} = user, attrs) do
-    # user
-    # |> User.changeset(attrs)
-    # |> Repo.update()
     update_user =
       attrs
       |> UpdateUser.new()
       |> UpdateUser.assign_user(user)
       |> UpdateUser.downcase_email()
-
-    # |> UpdateUser.validate_input(attrs)
 
     with :ok <- App.dispatch(update_user, consistency: :strong) do
       get(User, uuid)
@@ -228,9 +228,6 @@ defmodule AuthManager.Accounts do
 
   """
   def create_profile(%User{} = user, attrs \\ %{}) do
-    # %Profile{}
-    # |> Profile.changeset(attrs)
-    # |> Repo.insert()
     uuid = UUID.uuid4()
 
     create_profile =
@@ -238,8 +235,6 @@ defmodule AuthManager.Accounts do
       |> CreateProfile.new()
       |> CreateProfile.assign_uuid(uuid)
       |> CreateProfile.assign_user(user)
-
-    # |> CreateProfile.validate_input(attrs)
 
     with :ok <- App.dispatch(create_profile, consistency: :strong) do
       get(Profile, uuid)

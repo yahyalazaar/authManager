@@ -6,32 +6,41 @@ defmodule AuthManager.Accounts.Commands.CreateUser do
             password_hash: ""
 
   use ExConstructor
-  import Ecto.Changeset
+  use Vex.Struct
   alias AuthManager.Accounts.Commands.CreateUser
+  alias AuthManager.Accounts.Validators.UniqueEmail
 
-  @doc false
-  def validate_input(%CreateUser{} = user, attrs) do
-    user
-    # Remove hash, add pw + pw confirmation
-    |> cast(attrs, [:uuid, :email, :password, :password_confirmation])
-    # Remove hash, add pw + pw confirmation
-    |> validate_required([:uuid, :email, :password, :password_confirmation])
-    # Check that email is valid
-    |> validate_format(:email, ~r/@/)
-    # Check that password length is >= 8
-    |> validate_length(:password, min: 8)
-    # Check that password === password_confirmation
-    |> validate_confirmation(:password)
-    |> unique_constraint(:email)
-    |> put_password_hash
-  end
+  validates(:uuid, uuid: true)
+
+  validates(:email,
+    presence: [message: "Email can't be empty"],
+    format: [with: ~r/\S+@\S+\.\S+/, allow_nil: true, allow_blank: true, message: "is invalid"],
+    by: &UniqueEmail.validate/2
+  )
+
+  validates(:password,
+    # presence: [message: "Password can't be empty"],
+    # length: [min: 6],
+    confirmation: true
+  )
+
+  validates(:password_hash, presence: [message: "can't be empty"])
 
   @doc """
   Hash the password, clear the original password
   """
-  def put_password_hash(%CreateUser{password: password, password_confirmation: password_confirmation} = create_user) do
-    %CreateUser{create_user | password: nil, password_confirmation: nil, password_hash: Comeonin.Bcrypt.hashpwsalt(password)}
+  def put_password_hash(
+        %CreateUser{password: password, password_confirmation: password_confirmation} =
+          create_user
+      ) do
+    %CreateUser{
+      create_user
+      | password: nil,
+        password_confirmation: nil,
+        password_hash: Comeonin.Bcrypt.hashpwsalt(password)
+    }
   end
+
   @doc """
   Convert email address to lowercase characters
   """

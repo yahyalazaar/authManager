@@ -11,39 +11,19 @@ defmodule AuthManager.Accounts.Commands.CreateProfile do
             country: ""
 
   use ExConstructor
-  import Ecto.Changeset
+  use Vex.Struct
   alias AuthManager.Accounts.Commands.CreateProfile
   alias AuthManager.Accounts.Projections.{User, Profile}
-  @doc false
-  def validate_input(%CreateProfile{} = profile, attrs) do
-  # def changeset(profile, attrs) do
-    profile
-    |> cast(attrs, [
-      :uuid,
-      :name,
-      :phone,
-      :role,
-      :is_admin,
-      :address,
-      :zip,
-      :country,
-      :city,
-      :user_uuid
-    ])
-    |> validate_required([
-      :uuid,
-      :name,
-      :phone,
-      :role,
-      :is_admin,
-      :address,
-      :zip,
-      :country,
-      :city,
-      :user_uuid
-    ])
-  end
 
+  validates(:uuid, uuid: true)
+
+  validates(:name,
+    presence: [message: "Name can't be empty"]
+  )
+
+  validates(:phone,
+    presence: [message: "Phone can't be empty"]
+  )
   @doc """
   Assign a user to profile
   """

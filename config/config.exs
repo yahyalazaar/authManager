@@ -56,7 +56,12 @@ config :authManager, AuthManager.App,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :authManager, AuthManager.Mailer, adapter: Swoosh.Adapters.Local
-
+config :vex,
+  sources: [
+    AuthManager.Accounts.Validators,
+    AuthManager.Support.Validators,
+    Vex.Validators
+  ]
 # Swoosh API client is needed for adapters other than SMTP.
 config :swoosh, :api_client, false
 

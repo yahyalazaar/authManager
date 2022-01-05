@@ -20,7 +20,8 @@ defmodule AuthManager.Application do
       # Start a worker by calling: AuthManager.Worker.start_link(arg)
       # {AuthManager.Worker, arg}
 
-      AuthManager.Accounts.Supervisor
+      AuthManager.Accounts.Supervisor,
+      AuthManager.Support.Unique
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

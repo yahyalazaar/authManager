@@ -37,7 +37,13 @@ defmodule AuthManagerWeb.UserController do
         conn |> render("jwt.json", user: user, jwt: token)
 
       _ ->
-        {:error, :unauthorized}
+        # {:error, :unauthorized}
+        conn
+        |> put_status(:unprocessable_entity)
+        |> put_view(AuthManagerWeb.ValidationView)
+        |> render("error.json",
+          errors: %{"email or password" => ["is invalid"]}
+        )
     end
   end
 
