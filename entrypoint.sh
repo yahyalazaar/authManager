@@ -11,7 +11,6 @@ do
   echo "$(date) - waiting for database to start."
   sleep 2
 done
-
 # Create the database if it doesn't exist.
 # -z flag returns true if string is null.
 if [[ -z `psql -Atqc "\\list $DATABASE_EVENTSTORE_NAME"` ]]; then

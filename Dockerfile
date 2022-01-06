@@ -1,8 +1,7 @@
 FROM elixir:latest
 
 # install build dependencies
-RUN apt-get update && apt-get install -y postgresql-client
-
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get install -y postgresql-client
 RUN mkdir /app
 COPY . /app
 WORKDIR /app

@@ -47,11 +47,27 @@ config :logger, level: :info
 #       force_ssl: [hsts: true]
 #
 # Check `Plug.SSL` for all available options in `force_ssl`.
+port = String.to_integer(System.get_env("PORT") || "8080")
+
 config :authManager, AuthManagerWeb.Endpoint,
-  url: [host: "localhost", port: System.get_env("PORT")],
+  # url: [host: "yahyalazaar.com", port: 443],
+  url: [host: "localhost", port: port],
+  http: [
+    ip: {0, 0, 0, 0, 0, 0, 0, 0},
+    port: port
+  ],
+  # force_ssl: [hsts: true],
+  # force_ssl: [rewrite_on: [:x_forwarded_proto]],
+  # server: true,
+  #   https: [
+  #   port: 443,
+  #   cipher_suite: :compatible,
+  #   keyfile: "priv/ssl/server.key",
+  #   certfile: "priv/ssl/cert.crt"
+  # ],
+  # url: [host: "localhost", port: System.get_env("PORT")],
   # cache_static_manifest: "priv/static/cache_manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
-
 
 # Configure your database
 config :authManager, AuthManager.Repo,
@@ -61,3 +77,16 @@ config :authManager, AuthManager.Repo,
   hostname: System.get_env("DATABASE_HOST"),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   database_url: System.get_env("DATABASE_URL")
+
+# ssl: true
+
+config :authManager, AuthManager.EventStore,
+  serializer: Commanded.Serialization.JsonSerializer,
+  username: System.get_env("DATABASE_USER"),
+  password: System.get_env("DATABASE_PASS"),
+  database: System.get_env("DATABASE_EVENTSTORE_NAME"),
+  hostname: System.get_env("DATABASE_HOST"),
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+  database_url: System.get_env("DATABASE_EVENTSTORE_URL")
+
+# ssl: true

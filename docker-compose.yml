@@ -48,7 +48,9 @@ services:
     environment:
       - DATABASE_HOST=db_prod
       - DATABASE_NAME=authManager_prod
-      - DATABASE_URL=ecto://postgres:postgres@host.docker.internal/authManager_prod
+      - DATABASE_EVENTSTORE_NAME=authManager_eventstore_dev
+      - DATABASE_URL=ecto://postgres:postgres@5.135.149.55/authManager_prod
+      - DATABASE_EVENTSTORE_URL=ecto://postgres:postgres@5.135.149.55/authManager_eventstore_dev
       - PORT=4000
     depends_on:
       - db_prod

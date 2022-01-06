@@ -13,7 +13,7 @@ config :authManager,
 
 # Configures the endpoint
 config :authManager, AuthManagerWeb.Endpoint,
-  url: [host: "localhost"],
+  # url: [host: "localhost"],
   render_errors: [view: AuthManagerWeb.ErrorView, accepts: ~w(json), layout: false],
   pubsub_server: AuthManager.PubSub,
   live_view: [signing_salt: "K8MagJS/"]
