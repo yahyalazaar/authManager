@@ -31,6 +31,7 @@ defmodule AuthManagerWeb.Router do
     post("/signout", UserController, :sign_out)
     #Profile route
     get("/profiles", ProfileController, :index)
+    post("/profiles", ProfileController, :create)
     get("/profiles/:uuid", ProfileController, :show)
     patch("/profiles/:uuid", ProfileController, :update)
     put("/profiles/:uuid", ProfileController, :update)
