@@ -4,7 +4,7 @@ defmodule AuthManager.Accounts.Commands.UpdateProfile do
             name: "",
             phone: "",
             role: "",
-            is_admin: "",
+            is_admin: false,
             address: "",
             city: "",
             zip: "",
