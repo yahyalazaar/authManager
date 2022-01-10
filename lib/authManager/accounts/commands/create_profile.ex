@@ -18,12 +18,37 @@ defmodule AuthManager.Accounts.Commands.CreateProfile do
   validates(:uuid, uuid: true)
 
   validates(:name,
-    presence: [message: "Name can't be empty"]
+    presence: [message: "name can't be empty"]
   )
 
   validates(:phone,
-    presence: [message: "Phone can't be empty"]
+    presence: [message: "phone can't be empty"]
   )
+
+  validates(:country,
+    presence: [message: "country can't be empty"]
+  )
+
+  validates(:address,
+    presence: [message: "address can't be empty"]
+  )
+
+  validates(:city,
+    presence: [message: "city can't be empty"]
+  )
+
+  validates(:zip,
+    presence: [message: "zip can't be empty"]
+  )
+
+  validates(:role,
+    presence: [message: "role can't be empty"]
+  )
+
+  validates(:is_admin,
+    presence: [message: "is_admin can't be empty"]
+  )
+
   @doc """
   Assign a user to profile
   """

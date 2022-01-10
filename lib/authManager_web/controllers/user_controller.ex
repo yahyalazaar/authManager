@@ -32,12 +32,11 @@ defmodule AuthManagerWeb.UserController do
   end
 
   def sign_in(conn, %{"email" => email, "password" => password}) do
-    case Accounts.token_sign_in(email, password) do
-      {:ok, {token, user}, _claims} ->
-        conn |> render("jwt.json", user: user, jwt: token)
-
-      _ ->
-        # {:error, :unauthorized}
+    with {:ok, %User{} = user} <- Accounts.sign_in(email, password),
+         {:ok, jwt} <- Accounts.generate_jwt(user) do
+      conn |> render("jwt.json", user: user, jwt: jwt)
+    else
+      {:error, :unauthorized} ->
         conn
         |> put_status(:unprocessable_entity)
         |> put_view(AuthManagerWeb.ValidationView)

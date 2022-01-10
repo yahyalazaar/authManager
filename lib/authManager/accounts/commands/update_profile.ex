@@ -4,11 +4,11 @@ defmodule AuthManager.Accounts.Commands.UpdateProfile do
             name: "",
             phone: "",
             role: "",
-            is_admin: false,
             address: "",
             city: "",
             zip: "",
-            country: ""
+            country: "",
+            is_admin: false
 
   use ExConstructor
   use Vex.Struct
@@ -18,14 +18,37 @@ defmodule AuthManager.Accounts.Commands.UpdateProfile do
   validates(:uuid, uuid: true)
 
   validates(:name,
-    presence: [message: "Name can't be empty"],
-    string: true
+    presence: [message: "name can't be empty"]
   )
 
   validates(:phone,
-    presence: [message: "Phone can't be empty"],
-    string: true
+    presence: [message: "phone can't be empty"]
   )
+
+  validates(:country,
+    presence: [message: "country can't be empty"]
+  )
+
+  validates(:address,
+    presence: [message: "address can't be empty"]
+  )
+
+  validates(:city,
+    presence: [message: "city can't be empty"]
+  )
+
+  validates(:zip,
+    presence: [message: "zip can't be empty"]
+  )
+
+  validates(:role,
+    presence: [message: "role can't be empty"]
+  )
+
+  validates(:is_admin,
+    presence: [message: "is_admin can't be empty"]
+  )
+
   @doc """
   Assign a user to profile
   """

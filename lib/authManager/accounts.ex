@@ -13,22 +13,22 @@ defmodule AuthManager.Accounts do
   alias AuthManager.Guardian
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
 
-  def token_sign_in(email, password) do
-    case email_password_auth(email, password) do
-      {:ok, user} ->
-        {Guardian.encode_and_sign(user, token_type: :access), user}
-
-      _ ->
-        {:error, :unauthorized}
+  def sign_in(email, password) do
+    with {:ok, user} <- user_by_email(email) do
+      verify_password(password, user)
     end
   end
 
-  defp email_password_auth(email, password) when is_binary(email) and is_binary(password) do
-    with {:ok, user} <- get_by_email(email),
-         do: verify_password(password, user)
+  def generate_jwt(resource) do
+    case Guardian.encode_and_sign(resource, %{}, token_type: :token) do
+      {:ok, jwt, _full_claims} -> {:ok, jwt}
+    end
   end
 
-  def get_by_email(email) when is_binary(email) do
+  @doc """
+  Get an existing user by their email address, or return `nil` if not registered
+  """
+  def user_by_email(email) when is_binary(email) do
     get_by_email =
       email
       |> String.downcase()
@@ -38,28 +38,17 @@ defmodule AuthManager.Accounts do
     case get_by_email do
       nil ->
         dummy_checkpw()
-        {:error, "Login error."}
+        {:error, :unauthorized}
 
       user ->
         {:ok, user}
     end
   end
 
-  @doc """
-  Get an existing user by their email address, or return `nil` if not registered
-  """
-  def user_by_email(email) when is_binary(email) do
-    email
-    |> String.downcase()
-    |> UserByEmail.new()
-    |> Repo.one()
-  end
-
   defp verify_password(password, %User{} = user) when is_binary(password) do
-    if checkpw(password, user.password_hash) do
-      {:ok, user}
-    else
-      {:error, :invalid_password}
+    case checkpw(password, user.password_hash) do
+      true -> {:ok, user}
+      _ -> {:error, :invalid_password}
     end
   end
 
@@ -258,8 +247,6 @@ defmodule AuthManager.Accounts do
       attrs
       |> UpdateProfile.new()
       |> UpdateProfile.assign_profile(profile)
-
-    # |> UpdateProfile.validate_input(attrs)
 
     with :ok <- App.dispatch(update_profile, consistency: :strong) do
       get(Profile, uuid)
