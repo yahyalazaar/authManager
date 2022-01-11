@@ -14,7 +14,7 @@ defmodule AuthManager.Accounts.Validators.UniqueEmail do
   end
 
   defp email_registered?(email, user_uuid) do
-    case Accounts.user_by_email(email) do
+    case Accounts.get_by_email(email) do
       %User{uuid: ^user_uuid} -> false
       nil -> false
       _ -> true
