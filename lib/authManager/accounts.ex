@@ -24,14 +24,14 @@ defmodule AuthManager.Accounts do
       {:ok, jwt, _full_claims} -> {:ok, jwt}
     end
   end
-  
+
   def get_by_email(email) when is_binary(email) do
       email
       |> String.downcase()
       |> UserByEmail.new()
       |> Repo.one()
   end
-  
+
   @doc """
   Get an existing user by their email address, or return `nil` if not registered
   """
@@ -49,7 +49,7 @@ defmodule AuthManager.Accounts do
   defp verify_password(password, %User{} = user) when is_binary(password) do
     case checkpw(password, user.password_hash) do
       true -> {:ok, user}
-      _ -> {:error, :invalid_password}
+      _ -> {:error, :unauthorized}
     end
   end
 

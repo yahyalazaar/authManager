@@ -58,6 +58,12 @@ defmodule AuthManagerWeb.UserController do
     render(conn, "show.json", user: user)
   end
 
+  def user_details(conn, %{"uuid" => uuid}) do
+    user = Accounts.get_user!(uuid)
+    profile = Accounts.get_profile_by_user(user.uuid)
+    conn |> render("user_details.json", user: user, profile: profile)
+  end
+
   def my_user(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
     profile = Accounts.get_profile_by_user(user.uuid)

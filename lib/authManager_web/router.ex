@@ -25,6 +25,7 @@ defmodule AuthManagerWeb.Router do
     get("/users", UserController, :index)
     get("/me", UserController, :my_user)
     get("/users/:uuid", UserController, :show)
+    get("/users/:uuid/details", UserController, :user_details)
     patch("/users/:uuid", UserController, :update)
     put("/users/:uuid", UserController, :update)
     #Close session
